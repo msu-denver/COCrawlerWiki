@@ -5,6 +5,7 @@ import re
 from bs4 import BeautifulSoup
 import requests
 import copy
+from queue import PriorityQueue  # For managing links with priorities
 
 class WikipediaPage:
     def __init__(self, url):
@@ -17,8 +18,7 @@ class WikipediaPage:
         self.links = []
 
     def store_as_text(self, directory):
-        # Replace invalid file name characters with an underscore or remove them
-        sanitized_title = self.title.replace('"', '').replace(':', '_').replace('/', '_').replace('\\', '_').replace('|', '_').replace('?', '').replace('*', '_').replace('<', '_').replace('>', '_')
+        sanitized_title = re.sub(r'[\\/*?:"<>|]', "_", self.title)  # Sanitize title for file name
         file_name = sanitized_title.replace(" ", "_") + '.txt'
         try:
             with open(os.path.join(directory, file_name), 'w+', encoding='utf-8') as file:
@@ -29,7 +29,6 @@ class WikipediaPage:
         except OSError as e:
             print(f"Error writing file {file_name}: {e}")
 
-
 class Crawler:
     def __init__(self, max_depth, store_after_parsing=True, directory="ColoradoWikiPages"):
         self.max_depth = max_depth
@@ -38,10 +37,62 @@ class Crawler:
         self.valid_origins = ["https://en.wikipedia.org"]
         self.wiki_page_link_pattern = re.compile(r"^/wiki/")
         self.category_link_pattern = re.compile(r"^/wiki/Category:")
+        # Keywords with associated weights
+        self.keywords_weights = {
+            "Colorado": 5,
+            "Denver": 3,
+            "Rocky Mountains": 3,
+
+            "Boulder": 3,
+            "Colorado history": 3,
+            "Adams": 2,
+            "El Paso": 3,
+            "Jefferson": 3,
+            "Arapahoe": 3,
+            "Douglas": 3,
+            "Larimer": 3,
+            "Weld": 3,
+            "Boulder": 3,
+            "Pueblo": 3,
+            "Mesa": 3,
+            "Broomefield": 3,
+            "Summit": 3,
+            "Vail": 3,
+            "Aspen": 3,
+            "Rocky Mountain National Park": 5,
+            "Mesa Verde National Park": 5,
+            "Black Canyon of the Gunnison": 4,
+            "Great Sand Dunes": 4,
+            "Garden of the Gods": 4,
+            "Pikes Peak": 4,
+            "Mount Elbert": 4,
+            "San Juan Mountains": 4,
+            "Maroon Bells": 4,
+            "Fort Collins": 3,
+            "Colorado Springs": 3,
+            "Lakewood": 3,
+            "Aurora": 3,
+            "Westminster": 3,
+            "Red Rocks Amphitheatre": 4,
+            "Dinosaur National Monument": 4,
+            "Breckenridge": 3,
+            "Telluride": 3,
+            "University of Colorado Boulder": 2,
+            "Colorado State University": 2,
+            "University of Denver": 2,
+            "Denver Broncos": 3,
+            "Colorado Rockies": 3,
+            "Colorado Avalanche": 3,
+            "Denver Nuggets": 3,
+            "Zebulon Pike": 1,
+            "Kit Carson": 1,
+            "Fourteeners": 3,
+            "Centennial State": 2
+}
         if not os.path.exists(directory):
             os.makedirs(directory)
-        self.visited_urls = set()  # Keep track of visited URLs
-
+        self.visited_urls = set()
+        self.link_queue = PriorityQueue()  # Initialize the priority queue
     def download_page(self, url):
         try:
             response = requests.get(url)
@@ -50,115 +101,91 @@ class Crawler:
         except Exception as e:
             print(f"Failed to download {url}: {e}")
         return None
+    
+    def calculate_link_relevance(self, link_url):
+        relevance_score = 0
+        for keyword, weight in self.keywords_weights.items():
+            if keyword.lower() in link_url.lower():
+                relevance_score += weight
+        return relevance_score
 
+    # Modify download_page, parse_category, and parse_page methods as necessary
     def parse_category(self, url, depth=0):
-        """
-        Parses a Wikipedia category page and recursively crawls its links.
-        """
+        if depth >= self.max_depth:
+            return
         print(f"Parsing category: {url} at depth {depth}")
         page_content = self.download_page(url)
         if page_content is None:
-            return []
+            return
         soup = BeautifulSoup(page_content, 'lxml')
         links = soup.find_all('a')
-        pages = []
         for link in links:
             link_url = link.get('href')
-            if link_url and self.wiki_page_link_pattern.match(link_url) and not link_url in self.visited_urls:
+            if link_url and self.wiki_page_link_pattern.match(link_url) and link_url not in self.visited_urls:
                 full_url = urljoin(url, link_url)
                 self.visited_urls.add(full_url)  # Mark this URL as visited
+                relevance_score = -self.calculate_link_relevance(full_url)  # Negate score for PriorityQueue
                 if self.category_link_pattern.match(link_url):
-                    # It's a subcategory, parse it as a category
-                    pages.extend(self.parse_category(full_url, depth + 1))
+                    self.link_queue.put((relevance_score, full_url))  # It's a subcategory
                 else:
-                    # It's a regular page, parse it as such
-                    pages.extend(self.parse_page(full_url, depth + 1))
-        return pages
-    def is_colorado_related(self, content):
-        """
-        Checks if the content of the page contains Colorado-related keywords.
-        """
-        keywords = ['Colorado', 'Denver', 'Rocky Mountains', 'Boulder']
-        return any(keyword in content for keyword in keywords)
+                    self.link_queue.put((relevance_score, full_url))  # It's a regular page
 
     def parse_page(self, url, depth=0):
-        """
-        Downloads and parses a Wikipedia page and stores it if required.
-        :param url:
-        :return:
-        """
+        if depth >= self.max_depth:
+            return
         print("Parsing page: ", url)
         page_content = self.download_page(url)
         if page_content is None:
-            return []
+            return
 
         soup = BeautifulSoup(page_content, 'lxml')
-        pages = []
         page = WikipediaPage(url)
 
-        # Extract Wikipedia links
+    # Initialize the title and paragraphs for storage
+        page.title = soup.find(id="firstHeading").text.strip()
+        page.html = str(soup)
+
+    # Extract Wikipedia links and prioritize them
         links = soup.find_all('a')
         for link in links:
             link_url = link.get('href')
-            if link_url is not None and self.wiki_page_link_pattern.match(link_url):
-                full_url = '{uri.scheme}://{uri.netloc}'.format(uri=urlparse(url)) + link_url
-                if full_url not in self.visited_urls:  # Check if the URL has already been visited
+            if link_url and self.wiki_page_link_pattern.match(link_url):
+                full_url = urljoin(url, link_url)
+                if full_url not in self.visited_urls:
                     self.visited_urls.add(full_url)  # Mark this URL as visited
-                    page.links.append(full_url)
-                    pages.extend(self.crawl(full_url, depth + 1))
+                    relevance_score = -self.calculate_link_relevance(full_url)  # Negate score for PriorityQueue
+                    self.link_queue.put((relevance_score, full_url))
 
-        # Extract paragraphs
+    # Collect paragraphs
         text_container = soup.find('div', {'class': 'mw-parser-output'})
-        if text_container:  # Check if text_container is not None
-            zero_paragraph = {"title": "", "text": ""}
-            current_paragraph = copy.deepcopy(zero_paragraph)
+        if text_container:
             for child in text_container.children:
-                if child.name == "p":
-                    current_paragraph["text"] += child.text + "\n"
-                elif child.name == "h2":
-                    if current_paragraph["text"]:  # Ensure paragraph has text before appending
-                        page.paragraphs.append(current_paragraph)
-                    current_paragraph = copy.deepcopy(zero_paragraph)
-                    current_paragraph["title"] = child.text.strip()
+                if child.name == "p" and child.text.strip():
+                # Append paragraphs as a dictionary to include titles if necessary
+                    page.paragraphs.append({"title": "", "text": child.text.strip()})
+                elif child.name in ["h2", "h3", "h4", "h5", "h6"]:
+                # This is simplified; 
+                    page.paragraphs.append({"title": child.text.strip(), "text": ""})
 
-            if current_paragraph["text"]:  # Add the last paragraph if it has text
-                page.paragraphs.append(current_paragraph)
+    # Save the page
+        page.store_as_text(self.directory)
 
-        # Extract graphics
-        image_container = soup.find_all('div', {'class': 'thumbinner'})
-        zero_graphic = {"url": "", "caption": ""}
-        for image in image_container:
-            current_graphic = copy.deepcopy(zero_graphic)
-            for child in image.children:
-                if child.name == "a":
-                    current_graphic["url"] = child.get('href')
-                elif child.name == "div":
-                    current_graphic["caption"] = child.text
-            page.graphics.append(current_graphic)
 
-        toc_element = soup.find(id="toc")
-        if toc_element is not None:
-            page.table_of_contents = list(filter(lambda x: x != "", toc_element.text.split("\n")[1:]))
-
-        page.title = soup.find(id="firstHeading").text
-        page.html = str(soup)
-
-        if self.store_after_parsing:
-            page.store_as_text(self.directory)
-        pages.append(page)
-        return pages
-
-    
     def crawl(self, initial_link, depth=0):
         if depth > self.max_depth:
             return []
-        print(f"Crawling: {initial_link} at depth {depth}")
-        if "/wiki/Category:" in initial_link:
-            return self.parse_category(initial_link, depth)
-        else:
-            return self.parse_page(initial_link, depth)
+        self.link_queue.put((0, initial_link))  # Queue links with priority, lower scores first
+
+        while not self.link_queue.empty():
+            _, current_link = self.link_queue.get()
+            print(f"Crawling: {current_link} at depth {depth}")
+            if "/wiki/Category:" in current_link:
+                self.parse_category(current_link, depth)
+            else:
+                self.parse_page(current_link, depth)
 
 if __name__ == "__main__":
     crawler = Crawler(max_depth=2, store_after_parsing=True, directory="ColoradoWikiPages")
     initial_link = "https://en.wikipedia.org/wiki/Category:Colorado"
     crawler.crawl(initial_link)
+
