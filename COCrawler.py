@@ -177,7 +177,7 @@ class Crawler:
                 # Append paragraphs as a dictionary to include titles if necessary
                     page.paragraphs.append({"title": "", "text": child.text.strip()})
                 elif child.name in ["h2", "h3", "h4", "h5", "h6"]:
-                # This is simplified; you might want to handle sections more robustly
+                # This is simplified; we might want more detail!!
                     page.paragraphs.append({"title": child.text.strip(), "text": ""})
 
     # Save the page
