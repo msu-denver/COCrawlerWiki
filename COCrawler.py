@@ -197,8 +197,7 @@ class Crawler:
             else:
                 self.parse_page(current_link, depth)
 
-    # Implement parse_category and parse_page to use calculate_link_relevance
-    # and adjust their logic to add links to the self.link_queue with appropriate priorities
+
 
 if __name__ == "__main__":
     crawler = Crawler(max_depth=2, store_after_parsing=True, directory="ColoradoWikiPages")
