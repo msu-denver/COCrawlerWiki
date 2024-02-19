@@ -2,6 +2,7 @@ import json
 import os
 from urllib.parse import urlparse, urljoin
 import re
+import time
 from bs4 import BeautifulSoup
 import requests
 import copy
@@ -37,15 +38,17 @@ class Crawler:
         self.valid_origins = ["https://en.wikipedia.org"]
         self.wiki_page_link_pattern = re.compile(r"^/wiki/")
         self.category_link_pattern = re.compile(r"^/wiki/Category:")
+        self.visited_urls = set()
+        self.queued_urls = set()  # Add this line to initialize queued_urls
+        self.link_queue = PriorityQueue()
         # Keywords with associated weights
         self.keywords_weights = {
             "Colorado": 5,
             "Denver": 3,
             "Rocky Mountains": 3,
 
-            "Boulder": 3,
-            "Colorado history": 3,
-            "Adams": 2,
+            "Colorado history": 5,
+            "Adams": 3,
             "El Paso": 3,
             "Jefferson": 3,
             "Arapahoe": 3,
@@ -79,21 +82,24 @@ class Crawler:
             "Telluride": 3,
             "University of Colorado Boulder": 2,
             "Colorado State University": 2,
-            "University of Denver": 2,
-            "Denver Broncos": 3,
-            "Colorado Rockies": 3,
-            "Colorado Avalanche": 3,
-            "Denver Nuggets": 3,
-            "Zebulon Pike": 1,
-            "Kit Carson": 1,
+            "University of Denver": 4,
+            "Denver Broncos": 5,
+            "Colorado Rockies": 5,
+            "Colorado Avalanche": 5,
+            "Denver Nuggets": 5,
+            "Zebulon Pike": 5,
+            "Kit Carson": 4,
             "Fourteeners": 3,
-            "Centennial State": 2
+            "Centennial State": 5
 }
         if not os.path.exists(directory):
             os.makedirs(directory)
+            time.sleep(1)
         self.visited_urls = set()
+        time.sleep(1)
         self.link_queue = PriorityQueue()  # Initialize the priority queue
     def download_page(self, url):
+        time.sleep(1)
         try:
             response = requests.get(url)
             if response.status_code == 200:
@@ -108,10 +114,15 @@ class Crawler:
             if keyword.lower() in link_url.lower():
                 relevance_score += weight
         return relevance_score
+    def normalize_url(self, url):
+        url = url.lower().strip().rstrip('/')
+        # Further normalization as needed
+        return url
 
     # Modify download_page, parse_category, and parse_page methods as necessary
     def parse_category(self, url, depth=0):
-        if depth >= self.max_depth:
+        time.sleep(1)
+        if depth >= self.max_depth or url in self.visited_urls:
             return
         print(f"Parsing category: {url} at depth {depth}")
         page_content = self.download_page(url)
@@ -131,8 +142,10 @@ class Crawler:
                     self.link_queue.put((relevance_score, full_url))  # It's a regular page
 
     def parse_page(self, url, depth=0):
-        if depth >= self.max_depth:
+        normalized_url = self.normalize_url(url)
+        if normalized_url in self.visited_urls or normalized_url in self.queued_urls:
             return
+        self.queued_urls.add(normalized_url)
         print("Parsing page: ", url)
         page_content = self.download_page(url)
         if page_content is None:
@@ -164,7 +177,7 @@ class Crawler:
                 # Append paragraphs as a dictionary to include titles if necessary
                     page.paragraphs.append({"title": "", "text": child.text.strip()})
                 elif child.name in ["h2", "h3", "h4", "h5", "h6"]:
-                # This is simplified; 
+                # This is simplified; you might want to handle sections more robustly
                     page.paragraphs.append({"title": child.text.strip(), "text": ""})
 
     # Save the page
@@ -183,6 +196,9 @@ class Crawler:
                 self.parse_category(current_link, depth)
             else:
                 self.parse_page(current_link, depth)
+
+    # Implement parse_category and parse_page to use calculate_link_relevance
+    # and adjust their logic to add links to the self.link_queue with appropriate priorities
 
 if __name__ == "__main__":
     crawler = Crawler(max_depth=2, store_after_parsing=True, directory="ColoradoWikiPages")
