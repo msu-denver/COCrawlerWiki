@@ -28,4 +28,4 @@ Contributors names and contact info
 - Luke Farchione (J4eva) www.0xFarch.com
 
 ## TODO: 
-[] Word Cloud Analysis on the extracted pages from the wiki, will allow me to update the weights based on those results.
+- [] Word Cloud Analysis on the extracted pages from the wiki, will allow me to update the weights based on those results.
