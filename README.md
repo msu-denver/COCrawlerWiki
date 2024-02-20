@@ -1,10 +1,31 @@
- Run pip install -r requirements.txt
+# Project Title
+
+COCrawlerWiki
+
+## Description
 
 This will crawl Wikipedia for pages related to Colorado. This is meant to be an easy way to extract data for an LLM or RAG system. 
 
+## Getting Started
 
-Change the link at the bottom of the code and the keywords to tailor it to any data or information.
+### Dependencies
+Run pip install -r requirements.txt
 
+### Installing
 
-TODO: 
+* Pull the REPO
+* Change the paths to match your needs
+
+### Executing program
+
+* How to run the program
+```
+python COCrawlerWiki
+```
+## Authors
+
+Contributors names and contact info
+- Luke Farchione (J4eva) www.0xFarch.com
+
+## TODO: 
 [] Word Cloud Analysis on the extracted pages from the wiki, will allow me to update the weights based on those results.
