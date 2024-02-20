@@ -1,4 +1,4 @@
- Colorado Crawler Wikipedia
+## Colorado Crawler Wikipedia
 
 Welcome to the **Colorado Crawler Wikipedia** project, a solution designed for extracting and analyzing web data from Wikipedia pages related to Colorado. This Python toolkit is specifically tailored for web scraping, data cleaning, and geolocation extraction, offering an easy way to find datasets for an LLM or RAG system according to your specified keywords and weights.
 
