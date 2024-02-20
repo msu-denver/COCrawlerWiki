@@ -38,7 +38,7 @@ class Crawler:
         self.valid_origins = ["https://en.wikipedia.org"]
         self.wiki_page_link_pattern = re.compile(r"^/wiki/")
         self.category_link_pattern = re.compile(r"^/wiki/Category:")
-        self.visited_urls = set()
+        self.visited_urls = set() # Track Visited URLS, no dupes
         self.queued_urls = set()  # Add this line to initialize queued_urls
         self.link_queue = PriorityQueue()
         # Keywords with associated weights
@@ -96,7 +96,7 @@ class Crawler:
             os.makedirs(directory)
             time.sleep(1)
         self.visited_urls = set()
-        time.sleep(1)
+        time.sleep(1) # Slows down the process but ensures everything is saved
         self.link_queue = PriorityQueue()  # Initialize the priority queue
     
     def download_page(self, url):
