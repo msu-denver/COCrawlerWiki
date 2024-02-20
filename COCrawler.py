@@ -91,13 +91,14 @@ class Crawler:
             "Kit Carson": 4,
             "Fourteeners": 3,
             "Centennial State": 5
-}
+} # Add as many as you want for your data, use word cloud analysis to set word weights (WIP)
         if not os.path.exists(directory):
             os.makedirs(directory)
             time.sleep(1)
         self.visited_urls = set()
         time.sleep(1)
         self.link_queue = PriorityQueue()  # Initialize the priority queue
+    
     def download_page(self, url):
         time.sleep(1)
         try:
@@ -110,7 +111,9 @@ class Crawler:
     
     def calculate_link_relevance(self, link_url):
         relevance_score = 0
+        # Iterate over each keyword & it's associated weight defined in the class
         for keyword, weight in self.keywords_weights.items():
+            # This is a check to see if the keyword is present within the URL
             if keyword.lower() in link_url.lower():
                 relevance_score += weight
         return relevance_score
@@ -119,7 +122,7 @@ class Crawler:
         # Further normalization as needed
         return url
 
-    # Modify download_page, parse_category, and parse_page methods as necessary
+    # Modify download_page, parse_category, and parse_page methods to your liking, depth can be changed for links
     def parse_category(self, url, depth=0):
         time.sleep(1)
         if depth >= self.max_depth or url in self.visited_urls:
@@ -177,13 +180,13 @@ class Crawler:
                 # Append paragraphs as a dictionary to include titles if necessary
                     page.paragraphs.append({"title": "", "text": child.text.strip()})
                 elif child.name in ["h2", "h3", "h4", "h5", "h6"]:
-                # This is simplified; we might want more detail!!
+                # This is simplified; we might want more detail!
                     page.paragraphs.append({"title": child.text.strip(), "text": ""})
 
     # Save the page
         page.store_as_text(self.directory)
 
-
+    # Change the Depth depending on how many links you want to follow
     def crawl(self, initial_link, depth=0):
         if depth > self.max_depth:
             return []
@@ -201,6 +204,6 @@ class Crawler:
 
 if __name__ == "__main__":
     crawler = Crawler(max_depth=2, store_after_parsing=True, directory="ColoradoWikiPages")
-    initial_link = "https://en.wikipedia.org/wiki/Category:Colorado"
+    initial_link = "https://en.wikipedia.org/wiki/Category:Colorado" # Inital link it crawls from, set max depth to decide how far it goes on the first page 
     crawler.crawl(initial_link)
 
