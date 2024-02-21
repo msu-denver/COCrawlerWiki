@@ -61,8 +61,8 @@ This ensures all URLs can be accessed and scraped for information.
 
 ## TODO:
 
-- [ ] Implement Word Cloud Analysis on the extracted pages from Wikipedia.
-- [ ] Update the weights based on Word Cloud Analysis results.
+- [x] Implement Word Cloud Analysis on the extracted pages from Wikipedia.
+- [x] Update the weights based on Word Cloud Analysis results.
 - [ ] Add additional data cleaning functions.
 - [ ] Improve the efficiency of the web scraping process.
 - [ ] Write comprehensive documentation for all new features.
