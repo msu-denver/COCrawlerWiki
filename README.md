@@ -8,6 +8,7 @@ Welcome to the **Colorado Crawler Wikipedia** project, a solution designed for e
 - **Data Cleaning**: Employ `cleaner.py` to refine your URL's by removing unnecessary or redundant information, ensuring a cleaner analysis.
 - **TXT to CSV**: Use `CSVConverter.py` to convert the txt files and summaries to CSV. This will allow the LLM to ingest the data we have crawled. 
 - **Geolocation Extraction**: With `GeoLocator.py`, extract geographical information and summaries and attach it to each article.
+- **Word Cloud Analysis**: Run `WordCloud.py` to regenerate weights for your crawler. This will scrape each URL you crawled and create a word cloud analysis for the most common words.
 - **Easy Setup**: Quick installation with a simple `requirements.txt` file to manage all necessary dependencies.
 
 ## Getting Started
@@ -62,6 +63,14 @@ python CSVConverter.py
 ```
 
 This ensures all CSV's include a summary, coordinates, and a link. This will be used to ingest and embed this data with our LLM
+
+- Run a word cloud analysis off the URL's you crawled.
+
+```bash
+python WordCloud.py
+```
+
+This will help you regenerate weights and words to exclude which help make your crawler more efficient for the data you're searching for. 
 
 
 
