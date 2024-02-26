@@ -40,14 +40,6 @@ cd COCrawlerWiki
 python COCrawler.py
 ```
 
-- To extract geolocation data:
-
-```bash
-python GeoLocator.py
-```
-
-This will scrape coordinates using the `geo-dec` class on Wikipedia pages.
-
 - For data cleaning:
 
 ```bash
@@ -55,6 +47,14 @@ python cleaner.py
 ```
 
 This ensures all URLs can be accessed and scraped for information.
+
+- To extract geolocation data:
+
+```bash
+python GeoLocator.py
+```
+
+This will scrape coordinates using the `geo-dec` class on Wikipedia pages.
 
 - Convert the txt files you crawled to CSV: Use this after using GeoLocator.py. 
 
