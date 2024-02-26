@@ -6,7 +6,8 @@ Welcome to the **Colorado Crawler Wikipedia** project, a solution designed for e
 
 - **Web Scraping**: Utilize `COCrawler.py` to crawl web pages and gather the data you need.
 - **Data Cleaning**: Employ `cleaner.py` to refine your URL's by removing unnecessary or redundant information, ensuring a cleaner analysis.
-- **Geolocation Extraction**: With `GeoLocator.py`, extract geographical information and attach it to each article
+- **TXT to CSV**: Use `CSVConverter.py` to convert the txt files and summaries to CSV. This will allow the LLM to ingest the data we have crawled. 
+- **Geolocation Extraction**: With `GeoLocator.py`, extract geographical information and summaries and attach it to each article.
 - **Easy Setup**: Quick installation with a simple `requirements.txt` file to manage all necessary dependencies.
 
 ## Getting Started
@@ -54,6 +55,15 @@ python cleaner.py
 
 This ensures all URLs can be accessed and scraped for information.
 
+- Convert the txt files you crawled to CSV: Use this after using GeoLocator.py. 
+
+```bash
+python CSVConverter.py
+```
+
+This ensures all CSV's include a summary, coordinates, and a link. This will be used to ingest and embed this data with our LLM
+
+
 
 ## Authors
 
@@ -63,7 +73,7 @@ This ensures all URLs can be accessed and scraped for information.
 
 - [x] Implement Word Cloud Analysis on the extracted pages from Wikipedia.
 - [x] Update the weights based on Word Cloud Analysis results.
-- [ ] Add additional data cleaning functions.
+- [x] Add additional data cleaning functions.
 - [ ] Improve the efficiency of the web scraping process.
 - [ ] Write comprehensive documentation for all new features.
 
