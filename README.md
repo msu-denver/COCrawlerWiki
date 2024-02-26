@@ -45,7 +45,7 @@ python COCrawler.py
 python GeoLocator.py
 ```
 
-- This will scrape coordinates using the `geo-dec` class on Wikipedia pages.
+This will scrape coordinates using the `geo-dec` class on Wikipedia pages.
 
 - For data cleaning:
 
