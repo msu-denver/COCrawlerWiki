@@ -2,10 +2,11 @@ import os
 import re
 
 # Define the path to the folder containing the text files
-folder_path = 'S:\\Web_Crawler\\ColoradoWikiPages'
+folder_path = 'C:\\Users\\lukef\\Desktop\\EXAMPLES\\ColoradoWikiPages' 
 
 # Regex pattern to match 'Talk:', 'Special:WhatLinksHere/', 'Template_', and 'Template:Editnotices/Page/'
-pattern = re.compile(r'Talk:|Special:WhatLinksHere/|Template_|Template:Editnotices/Page/')
+pattern = re.compile(r'Talk:|Special:WhatLinksHere/|Template:|Special:WhatLinksHere/Talk:|Template_|Template:Editnotices/Page/|Special:WhatLinksHere/Template_talk:|Special:EditPage/Template:|/Special:EditPage')
+
 
 # Iterate over each file in the directory
 for filename in os.listdir(folder_path):
