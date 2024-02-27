@@ -65,9 +65,9 @@ python CSVConverter.py
 This ensures all CSV's include a summary, coordinates, and a link. This will be used to ingest and embed this data with our LLM
 
 - Convert the CSV data you've crawled into PostGIS format for your LLM.
-  ```
-  CSVtoPostGIS.py
-  ```
+```bash
+CSVtoPostGIS.py
+```
 This will allow you to take the geo data you've crawled and format it in a way that is acceptable for the LLM. You can use this PostGIS data with OSM data to train a model for a state
 
 - Run a word cloud analysis off the URL's you crawled.
