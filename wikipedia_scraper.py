@@ -24,7 +24,7 @@ def get_wikipedia_paragraphs(driver, keyword, num_paragraphs=3):
     except Exception as e:
         return None
 
-def save_to_file(keyword, text, folder="WikiStateParks"):
+def save_to_file(keyword, text, folder):
     """Save the text to a file."""
     if not os.path.exists(folder):
         os.makedirs(folder)
@@ -32,7 +32,7 @@ def save_to_file(keyword, text, folder="WikiStateParks"):
     with open(filename, 'w', encoding='utf-8') as file:
         file.write(text)
 
-def click_through_links(driver, keyword, num_paragraphs=3):
+def click_through_links(driver, keyword, num_paragraphs=3, folder="WikiCO"):
     """Click through links on a Wikipedia page and save details."""
     url = f"https://en.wikipedia.org/wiki/{keyword.replace(' ', '_')}"
     driver.get(url)
@@ -47,7 +47,7 @@ def click_through_links(driver, keyword, num_paragraphs=3):
                 sleep(2)  # Wait for the new page to load
                 text = get_wikipedia_paragraphs(driver, href.split('/')[-1], num_paragraphs)
                 if text:
-                    save_to_file(href.split('/')[-1], text)
+                    save_to_file(href.split('/')[-1], text, folder)
                     print(f"Saved details for {href}")
         except Exception as e:
             continue
@@ -59,41 +59,30 @@ def load_keywords(file_path):
 
 def main():
     folder = "Colorado"
-    counties_file = os.path.join(folder, "counties.txt")
-    cities_file = os.path.join(folder, "cities.txt")
-    monuments_file = os.path.join(folder, "monuments.txt")
-    state_parks_file = os.path.join(folder, "stateparks.txt")
-    national_parks_file = os.path.join(folder, "nationalparks.txt")
-
-    if not os.path.exists(counties_file) or not os.path.exists(cities_file) or not os.path.exists(monuments_file) or not os.path.exists(state_parks_file) or not os.path.exists(national_parks_file):
-        print(f"Ensure 'counties.txt', 'cities.txt', 'monuments.txt', 'stateparks.txt', and 'nationalparks.txt' are present in the '{folder}' folder.")
+    
+    file_name = input("Enter the name of the text file (e.g., counties.txt, cities.txt, etc.): ").strip()
+    file_path = os.path.join(folder, file_name)
+    
+    if not os.path.exists(file_path):
+        print(f"The file '{file_name}' does not exist in the '{folder}' folder.")
         return
+    
+    save_folder = input("Enter the name of the folder to save the files to: If null it will make WikiCO ").strip()
+    if not save_folder:
+        save_folder = "WikiCO"
 
-    choice = input("Do you want to process 'county', 'city', 'monuments', 'state parks', or 'national parks'? ").strip().lower()
-    if choice == 'county':
-        keywords = load_keywords(counties_file)
-    elif choice == 'city':
-        keywords = load_keywords(cities_file)
-    elif choice == 'monuments':
-        keywords = load_keywords(monuments_file)
-    elif choice == 'state parks':
-        keywords = load_keywords(state_parks_file)
-    elif choice == 'national parks':
-        keywords = load_keywords(national_parks_file)
-    else:
-        print("Invalid choice. Please enter 'county', 'city', 'monuments', 'state parks', or 'national parks'.")
-        return
+    keywords = load_keywords(file_path)
 
     driver = initialize_driver()
     for keyword in keywords:
         print(f"Processing: {keyword}")
         text = get_wikipedia_paragraphs(driver, keyword)
         if text:
-            save_to_file(keyword, text, "WikiStateParks")
+            save_to_file(keyword, text, save_folder)
             print(f"Saved details for {keyword}")
         else:
             print(f"Could not find details for {keyword}")
-        click_through_links(driver, keyword)
+        click_through_links(driver, keyword, folder=save_folder)
     driver.quit()
 
 if __name__ == "__main__":
