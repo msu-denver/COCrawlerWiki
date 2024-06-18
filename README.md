@@ -32,3 +32,12 @@ word_count.py
 ```
 - Follow the prompts on screen to start crawling cities or counties
 
+- Do you have an ArcGIS API and you want to scrape all of the parameters without doing it mnaually? Use this file and specify your chrome driver path to run this selenium bot.
+- Don't know where your chromedriver is? https://www.browserstack.com/guide/run-selenium-tests-using-selenium-chromedriver
+- Windows: Run this to find it! Get-ChildItem -Path "C:\\" -Recurse -Filter "chromedriver.exe" -ErrorAction SilentlyContinue
+```bash
+arcgis_finder.py
+```
+- Follow the prompts on screen to start crawling cities or counties
+
+
